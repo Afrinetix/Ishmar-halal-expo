@@ -27,15 +27,35 @@ function initLoader() {
   });
 }
 
-/* Sticky header ------------------------------------------------------------ */
+/* Sticky header ------------------------------------------------------------
+   The header's actual height changes when .is-scrolled shrinks it (88px/72px
+   -> 76px/64px), but the mobile nav panel positions itself below the header
+   using the static --header-h token. Without syncing that token to the
+   header's real, current height, opening the mobile menu after scrolling
+   leaves it offset from where the header actually ends. --header-h is
+   re-measured on scroll and resize (and once on load) to keep them in sync. */
 function initHeader() {
   const header = document.querySelector('.site-header');
   if (!header) return;
+
+  const syncHeaderHeight = () => {
+    document.documentElement.style.setProperty('--header-h-live', `${header.offsetHeight}px`);
+  };
+
   const onScroll = () => {
     header.classList.toggle('is-scrolled', window.scrollY > 24);
+    syncHeaderHeight();
   };
+
   onScroll();
   window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', syncHeaderHeight);
+  // The header's height animates (var(--transition), 0.35s) when .is-scrolled
+  // toggles, so a read taken the instant the class changes can catch it
+  // mid-transition. Re-sync once the animation actually settles.
+  header.addEventListener('transitionend', (e) => {
+    if (e.propertyName === 'height') syncHeaderHeight();
+  });
 }
 
 /* Mega menus (click-to-open, keyboard + touch friendly) ------------------- */
