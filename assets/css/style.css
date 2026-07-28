@@ -456,7 +456,21 @@ p { color: var(--text-muted); }
 .nav-toggle.is-active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
 @media (max-width: 1080px) {
-  .nav-main { position: fixed; inset: var(--header-h-live, var(--header-h)) 0 0 0; background: var(--white); flex-direction: column; align-items: stretch; padding: var(--space-4); overflow-y: auto; transform: translateX(100%); transition: transform var(--transition); box-shadow: var(--shadow-lg); -webkit-overflow-scrolling: touch; }
+  .nav-main {
+    position: fixed;
+    top: var(--header-h-live, var(--header-h)); left: 0; right: 0;
+    /* Mobile browsers show/hide their address bar while scrolling, which
+       changes the real visible viewport height. bottom:0 anchors to the
+       *maximum* (address-bar-hidden) viewport, so once the user has
+       scrolled and the toolbar is showing again, a bottom-anchored panel
+       can extend past what's actually visible, cutting off menu items.
+       Sizing with an explicit height keyed off dvh (the browser's live,
+       currently-visible viewport height) avoids that; the vh line first
+       is a fallback for browsers that predate dvh support. */
+    height: calc(100vh - var(--header-h-live, var(--header-h)));
+    height: calc(100dvh - var(--header-h-live, var(--header-h)));
+    background: var(--white); flex-direction: column; align-items: stretch; padding: var(--space-4); overflow-y: auto; transform: translateX(100%); transition: transform var(--transition); box-shadow: var(--shadow-lg); -webkit-overflow-scrolling: touch;
+  }
   .nav-main.is-open { transform: translateX(0); }
   .nav-main > ul { flex-direction: column; align-items: stretch; gap: 0; }
   .nav-main > ul > li { border-bottom: 1px solid var(--border); }
