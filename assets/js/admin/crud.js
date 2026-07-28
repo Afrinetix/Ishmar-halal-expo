@@ -44,6 +44,78 @@ class CrudPage {
       el.addEventListener('click', () => this.closeModal())
     );
     if (this.modalForm) this.modalForm.addEventListener('submit', (e) => this.handleSubmit(e));
+    this.initRepeaters();
+  }
+
+  /* ---------------------------------------------------------------- repeaters */
+
+  initRepeaters() {
+    if (!this.modalForm) return;
+    this.modalForm.addEventListener('click', (e) => {
+      const addBtn = e.target.closest('[data-repeater-add]');
+      if (addBtn) {
+        const key = addBtn.dataset.repeaterAdd;
+        const field = this.config.fields.find((f) => f.key === key);
+        if (field) this.addRepeaterRow(field, {});
+        return;
+      }
+      const removeBtn = e.target.closest('.repeater-remove');
+      if (removeBtn) removeBtn.closest('.repeater-row')?.remove();
+    });
+  }
+
+  addRepeaterRow(field, values) {
+    const container = document.getElementById(`repeater-${field.key}`);
+    if (!container) return;
+    const row = document.createElement('div');
+    row.className = 'repeater-row';
+    row.innerHTML = field.itemFields.map((itemField) => {
+      const val = values[itemField.key] || '';
+      if (itemField.type === 'image') {
+        const preview = val ? `style="display:block;" src="${escapeHtml(val)}"` : `style="display:none;" src=""`;
+        return `<div class="repeater-cell repeater-cell--image">
+          <img class="preview" ${preview} alt="">
+          <input type="file" accept="image/*" data-field="${itemField.key}" data-bucket="${field.bucket}">
+          <input type="hidden" data-field-existing="${itemField.key}" value="${escapeHtml(val)}">
+        </div>`;
+      }
+      return `<input type="text" class="repeater-cell" data-field="${itemField.key}" placeholder="${escapeHtml(itemField.label)}" value="${escapeHtml(val)}">`;
+    }).join('') + `<button type="button" class="repeater-remove" aria-label="Remove">&times;</button>`;
+    container.appendChild(row);
+  }
+
+  fillRepeaterField(field, items) {
+    const container = document.getElementById(`repeater-${field.key}`);
+    if (!container) return;
+    container.innerHTML = '';
+    (Array.isArray(items) ? items : []).forEach((item) => this.addRepeaterRow(field, item || {}));
+  }
+
+  async collectRepeaterValue(field) {
+    const container = document.getElementById(`repeater-${field.key}`);
+    if (!container) return null;
+    const rows = Array.from(container.querySelectorAll('.repeater-row'));
+    const items = [];
+
+    for (const row of rows) {
+      const item = {};
+      for (const itemField of field.itemFields) {
+        if (itemField.type === 'image') {
+          const fileInput = row.querySelector(`input[type="file"][data-field="${itemField.key}"]`);
+          const existingInput = row.querySelector(`input[data-field-existing="${itemField.key}"]`);
+          const file = fileInput?.files[0];
+          item[itemField.key] = file ? await uploadToStorage(field.bucket, file) : (existingInput?.value || '');
+        } else {
+          const input = row.querySelector(`[data-field="${itemField.key}"]`);
+          item[itemField.key] = input ? input.value.trim() : '';
+        }
+      }
+      // Skip rows where every field was left blank, so an accidental
+      // "+ Add" click doesn't save an empty entry.
+      if (Object.values(item).some((v) => v)) items.push(item);
+    }
+
+    return items.length ? items : null;
   }
 
   /* ---------------------------------------------------------------- data */
@@ -191,6 +263,18 @@ class CrudPage {
         return `<div class="form-field"><label for="${id}">${field.label}</label>
           <textarea id="${id}" name="${field.key}" rows="4" placeholder="[]"></textarea>${hint}</div>`;
 
+      case 'repeater':
+        // A list of small sub-forms (e.g. one row per agenda item or per
+        // speaker) that the admin can add/remove freely. Entirely optional:
+        // an empty list saves as null, and the public page hides that
+        // whole section rather than showing empty/placeholder content.
+        return `<div class="form-field">
+          <label>${field.label}</label>
+          <div class="repeater" id="repeater-${field.key}" data-repeater="${field.key}"></div>
+          <button type="button" class="btn btn-outline btn-sm mt-2" data-repeater-add="${field.key}">+ Add ${escapeHtml(field.itemLabel || 'Item')}</button>
+          ${hint}
+        </div>`;
+
       default:
         return `<div class="form-field"><label for="${id}">${field.label}</label>
           <input type="text" id="${id}" name="${field.key}" ${req} ${field.readonly ? 'readonly' : ''}>${hint}</div>`;
@@ -209,6 +293,7 @@ class CrudPage {
       const preview = document.getElementById(`field-${f.key}-preview`);
       if (preview) { preview.style.display = 'none'; preview.src = ''; }
     });
+    this.config.fields.filter((f) => f.type === 'repeater').forEach((f) => this.fillRepeaterField(f, []));
 
     if (id) {
       const row = this.rows.find((r) => String(r.id) === String(id));
@@ -225,6 +310,10 @@ class CrudPage {
 
   fillForm(row) {
     this.config.fields.forEach((field) => {
+      if (field.type === 'repeater') {
+        this.fillRepeaterField(field, row[field.key]);
+        return;
+      }
       const el = document.getElementById(`field-${field.key}`);
       if (!el) return;
       const value = row[field.key];
@@ -307,6 +396,11 @@ class CrudPage {
         } else {
           payload[field.key] = formData.get(`${field.key}__existing`) || null;
         }
+        continue;
+      }
+
+      if (field.type === 'repeater') {
+        payload[field.key] = await this.collectRepeaterValue(field);
         continue;
       }
 

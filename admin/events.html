@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/style.css?v=3">
-<link rel="stylesheet" href="../assets/css/admin.css?v=3">
+<link rel="stylesheet" href="../assets/css/admin.css?v=4">
 </head>
 <body class="admin-body">
 
@@ -119,9 +119,24 @@
       { key: 'end_date', label: 'End Date', type: 'date' },
       { key: 'city', label: 'City', type: 'select', options: ['Nairobi', 'Mombasa'] },
       { key: 'venue_name', label: 'Venue', type: 'text', hint: 'e.g. Kenyatta International Convention Centre' },
-      { key: 'summary', label: 'Description', type: 'textarea', hint: 'Shown on event cards and the event page' },
+      { key: 'summary', label: 'Short Description', type: 'textarea', hint: 'Shown on event cards across the site' },
+      { key: 'description', label: 'About This Event (optional)', type: 'textarea', rows: 5, hint: 'Longer version shown on the event’s own page. Leave blank to just reuse the short description above.' },
       { key: 'cover_image_url', label: 'Cover Image', type: 'image', bucket: 'events' },
       { key: 'is_featured', label: 'Feature on homepage', type: 'checkbox' },
+      { key: 'agenda', label: 'Agenda (optional)', type: 'repeater', itemLabel: 'Agenda Item',
+        hint: 'Leave empty to hide the Agenda section on this event’s page entirely.',
+        itemFields: [
+          { key: 'time', label: 'Time (e.g. Day 1 · 09:00)' },
+          { key: 'title', label: 'What’s happening' },
+          { key: 'note', label: 'Location / details' },
+        ] },
+      { key: 'speakers', label: 'Speakers (optional)', type: 'repeater', itemLabel: 'Speaker', bucket: 'team',
+        hint: 'Leave empty to hide the Featured Speakers section on this event’s page entirely.',
+        itemFields: [
+          { key: 'name', label: 'Name' },
+          { key: 'title', label: 'Title / company' },
+          { key: 'photo', label: 'Photo', type: 'image' },
+        ] },
     ],
   });
 </script>

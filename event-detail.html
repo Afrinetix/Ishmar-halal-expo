@@ -49,7 +49,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css?v=3">
+<link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 
@@ -160,8 +160,7 @@
         </div>
 
         <h2>About this event</h2>
-        <p class="mt-2" id="event-description">The Ishmar Halal Trade Expo is our flagship exhibition and the largest trade event in Kenya. Over three days, more than 350 exhibitors from food and beverage, cosmetics, finance, tourism and logistics set up across four halls at KICC, hosting pre-scheduled meetings with buyers from across the region.</p>
-        <p class="mt-2">Alongside the exhibition floor, the programme includes a conference stage running sector briefings, a dedicated investor lounge, and a matchmaking desk that books business meetings before the doors even open.</p>
+        <p class="mt-2" id="event-description">The Ishmar Halal Trade Expo is our flagship exhibition and the largest trade event in Kenya. Over three days, more than 350 exhibitors from food and beverage, cosmetics, finance, tourism and logistics set up across four halls at KICC, hosting pre-scheduled meetings with buyers from across the region. Alongside the exhibition floor, the programme includes a conference stage running sector briefings, a dedicated investor lounge, and a matchmaking desk that books business meetings before the doors even open.</p>
 
         <h2 class="mt-5">Who should attend</h2>
         <div class="grid grid-2 mt-3" data-reveal-group>
@@ -183,27 +182,33 @@
           </div>
         </div>
 
-        <h2 class="mt-5">Agenda</h2>
-        <div class="mt-3">
-          <div class="agenda-item"><time>Day 1 · 09:00</time><div><strong>Doors open &amp; exhibitor walkthrough</strong><p class="mt-1">Registration opens, halls open to trade visitors.</p></div></div>
-          <div class="agenda-item"><time>Day 1 · 11:00</time><div><strong>Opening keynote: The State of Halal Trade in Africa</strong><p class="mt-1">Main stage, Hall A.</p></div></div>
-          <div class="agenda-item"><time>Day 2 · 10:00</time><div><strong>Halal Investment Summit</strong><p class="mt-1">Investor panels and SME pitch sessions, Conference Room 2.</p></div></div>
-          <div class="agenda-item"><time>Day 2 · 15:00</time><div><strong>Scheduled B2B matchmaking meetings</strong><p class="mt-1">Pre-booked buyer-seller meetings, Matchmaking Lounge.</p></div></div>
-          <div class="agenda-item"><time>Day 3 · 13:00</time><div><strong>Closing forum &amp; awards</strong><p class="mt-1">Best New Exhibitor and Export Achievement awards, Main stage.</p></div></div>
+        <!-- Agenda: hidden entirely by public-data.js when an event has no agenda items set in the admin. -->
+        <div id="event-agenda-section">
+          <h2 class="mt-5">Agenda</h2>
+          <div class="mt-3" id="event-agenda-list">
+            <div class="agenda-item"><time>Day 1 · 09:00</time><div><strong>Doors open &amp; exhibitor walkthrough</strong><p class="mt-1">Registration opens, halls open to trade visitors.</p></div></div>
+            <div class="agenda-item"><time>Day 1 · 11:00</time><div><strong>Opening keynote: The State of Halal Trade in Africa</strong><p class="mt-1">Main stage, Hall A.</p></div></div>
+            <div class="agenda-item"><time>Day 2 · 10:00</time><div><strong>Halal Investment Summit</strong><p class="mt-1">Investor panels and SME pitch sessions, Conference Room 2.</p></div></div>
+            <div class="agenda-item"><time>Day 2 · 15:00</time><div><strong>Scheduled B2B matchmaking meetings</strong><p class="mt-1">Pre-booked buyer-seller meetings, Matchmaking Lounge.</p></div></div>
+            <div class="agenda-item"><time>Day 3 · 13:00</time><div><strong>Closing forum &amp; awards</strong><p class="mt-1">Best New Exhibitor and Export Achievement awards, Main stage.</p></div></div>
+          </div>
         </div>
 
-        <h2 class="mt-5">Featured speakers</h2>
-        <div class="grid grid-4 mt-3" data-reveal-group>
-          <div class="speaker-card"><div class="speaker-card__media"><img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=300&auto=format&fit=crop" alt="Yusuf Ismail"></div><strong>Yusuf Ismail</strong><span style="font-size:.8rem;color:var(--gray-600);">CEO, Ishmar Halal Traders Expo</span></div>
-          <div class="speaker-card"><div class="speaker-card__media"><img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=300&auto=format&fit=crop" alt="Fatima Noor"></div><strong>Fatima Noor</strong><span style="font-size:.8rem;color:var(--gray-600);">Investment Director, Baraka Capital</span></div>
-          <div class="speaker-card"><div class="speaker-card__media"><img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=300&auto=format&fit=crop" alt="Omar Farah"></div><strong>Omar Farah</strong><span style="font-size:.8rem;color:var(--gray-600);">Director, Kenya Investment Authority</span></div>
-          <div class="speaker-card"><div class="speaker-card__media"><img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=300&auto=format&fit=crop" alt="Halima Rashid"></div><strong>Halima Rashid</strong><span style="font-size:.8rem;color:var(--gray-600);">COO, Ishmar Halal Traders Expo</span></div>
+        <!-- Speakers: hidden entirely by public-data.js when an event has no speakers set in the admin. -->
+        <div id="event-speakers-section">
+          <h2 class="mt-5">Featured speakers</h2>
+          <div class="grid grid-4 mt-3" id="event-speakers-list" data-reveal-group>
+            <div class="speaker-card"><div class="speaker-card__media"><img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=300&auto=format&fit=crop" alt="Yusuf Ismail"></div><strong>Yusuf Ismail</strong><span style="font-size:.8rem;color:var(--gray-600);">CEO, Ishmar Halal Traders Expo</span></div>
+            <div class="speaker-card"><div class="speaker-card__media"><img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=300&auto=format&fit=crop" alt="Fatima Noor"></div><strong>Fatima Noor</strong><span style="font-size:.8rem;color:var(--gray-600);">Investment Director, Baraka Capital</span></div>
+            <div class="speaker-card"><div class="speaker-card__media"><img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=300&auto=format&fit=crop" alt="Omar Farah"></div><strong>Omar Farah</strong><span style="font-size:.8rem;color:var(--gray-600);">Director, Kenya Investment Authority</span></div>
+            <div class="speaker-card"><div class="speaker-card__media"><img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=300&auto=format&fit=crop" alt="Halima Rashid"></div><strong>Halima Rashid</strong><span style="font-size:.8rem;color:var(--gray-600);">COO, Ishmar Halal Traders Expo</span></div>
+          </div>
         </div>
 
         <h2 class="mt-5">Venue</h2>
-        <p class="mt-2">Kenyatta International Convention Centre, Harambee Avenue, Nairobi. Four exhibition halls, on-site parking for 800 vehicles, and direct access from Nairobi's main business district.</p>
+        <p class="mt-2" id="event-venue-description">Kenyatta International Convention Centre, Harambee Avenue, Nairobi. Four exhibition halls, on-site parking for 800 vehicles, and direct access from Nairobi's main business district.</p>
         <div class="map-embed mt-3">
-          <iframe src="https://www.google.com/maps?q=Kenyatta+International+Convention+Centre,+Nairobi&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Map to Kenyatta International Convention Centre, Nairobi"></iframe>
+          <iframe id="event-map-iframe" src="https://www.google.com/maps?q=Kenyatta+International+Convention+Centre,+Nairobi&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Map to the event venue"></iframe>
         </div>
       </div>
 
@@ -279,7 +284,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="assets/js/supabase-client.js"></script>
-<script src="assets/js/public-data.js?v=3"></script>
-<script src="assets/js/main.js?v=3"></script>
+<script src="assets/js/public-data.js?v=2"></script>
+<script src="assets/js/main.js"></script>
 </body>
 </html>

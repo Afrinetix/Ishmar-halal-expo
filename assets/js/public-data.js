@@ -173,6 +173,41 @@ async function loadEventDetail(sb) {
     const img = document.getElementById('event-cover-image');
     if (img) { img.src = ev.cover_image_url; img.alt = ev.title; }
   }
+
+  const venueLine = [ev.venue_name, ev.venue_address, venue].filter(Boolean).join(', ');
+  setText('event-venue-description', venueLine);
+  const mapFrame = document.getElementById('event-map-iframe');
+  if (mapFrame && venueLine) {
+    mapFrame.src = `https://www.google.com/maps?q=${encodeURIComponent(venueLine)}&output=embed`;
+    mapFrame.title = `Map to ${ev.venue_name || ev.title}`;
+  }
+
+  toggleRepeaterSection('event-agenda-section', 'event-agenda-list', ev.agenda, renderAgendaItem);
+  toggleRepeaterSection('event-speakers-section', 'event-speakers-list', ev.speakers, renderSpeakerCard);
+}
+
+// Agenda/Speakers are optional per event. If the admin left them empty,
+// the whole section (heading included) is hidden rather than showing
+// stale example content that has nothing to do with this event.
+function toggleRepeaterSection(sectionId, listId, items, renderFn) {
+  const section = document.getElementById(sectionId);
+  if (!section) return;
+  if (!Array.isArray(items) || !items.length) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = '';
+  const list = document.getElementById(listId);
+  if (list) list.innerHTML = items.map(renderFn).join('');
+}
+
+function renderAgendaItem(item) {
+  return `<div class="agenda-item"><time>${esc(item.time || '')}</time><div><strong>${esc(item.title || '')}</strong>${item.note ? `<p class="mt-1">${esc(item.note)}</p>` : ''}</div></div>`;
+}
+
+function renderSpeakerCard(speaker) {
+  const photo = speaker.photo || 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=300&auto=format&fit=crop';
+  return `<div class="speaker-card"><div class="speaker-card__media"><img src="${esc(photo)}" alt="${esc(speaker.name || '')}"></div><strong>${esc(speaker.name || '')}</strong><span style="font-size:.8rem;color:var(--gray-600);">${esc(speaker.title || '')}</span></div>`;
 }
 
 /* -------------------------------------------------------------------- gallery */

@@ -189,6 +189,23 @@
 .checkbox-field input { width: 18px; height: 18px; }
 .checkbox-field label { font-size: 0.85rem; font-weight: 600; }
 
+/* Repeater fields (Agenda, Speakers, etc.) */
+.repeater { display: flex; flex-direction: column; gap: 0.6rem; }
+.repeater:empty { display: none; }
+.repeater-row {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.6rem; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--gray-50);
+}
+.repeater-row .repeater-cell { flex: 1; min-width: 0; padding: 0.55rem 0.7rem; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--white); font-size: 0.88rem; }
+.repeater-cell--image { display: flex; align-items: center; gap: 0.5rem; flex: 1; }
+.repeater-cell--image .preview { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: var(--gray-100); flex-shrink: 0; }
+.repeater-cell--image input[type="file"] { font-size: 0.78rem; flex: 1; min-width: 0; }
+.repeater-remove {
+  width: 30px; height: 30px; flex-shrink: 0; border-radius: 50%; color: var(--gray-600);
+  display: flex; align-items: center; justify-content: center; font-size: 1.1rem; line-height: 1;
+}
+.repeater-remove:hover { background: #fdecec; color: #b3261e; }
+
 /* Toast */
 .admin-toast {
   position: fixed; bottom: var(--space-3); right: var(--space-3); z-index: 2000;
