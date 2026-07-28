@@ -6,8 +6,8 @@
    safe to expose publicly — it only grants what Row Level Security allows.
    ========================================================================== */
 
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_URL = 'https://wojqljqrxzykhpguvbee.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvanFsanFyeHp5a2hwZ3V2YmVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyMjc3NTYsImV4cCI6MjEwMDgwMzc1Nn0.vsr-oKe6OL4_McOEErxSaC2j6iIF2SMARNJQ60XWluc';
 
 window.ishmarSupabase = null;
 
