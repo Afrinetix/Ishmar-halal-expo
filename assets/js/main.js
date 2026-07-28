@@ -263,29 +263,70 @@ function initLightbox() {
   });
 }
 
-/* Form handlers (client-side only until Supabase is wired in) ------------------- */
+/* Form handlers ------------------------------------------------------------------
+   Posts to Supabase when assets/js/supabase-client.js is configured
+   (window.ishmarSupabase set); otherwise falls back to a client-only
+   confirmation so the UI still feels complete before the database is linked. */
 function initFormHandlers() {
   document.querySelectorAll('form[data-form]').forEach((form) => {
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const status = form.querySelector('[data-form-status]');
       const btn = form.querySelector('button[type="submit"]');
       const originalText = btn ? btn.textContent : '';
+      const setStatus = (msg) => { if (status) { status.textContent = msg; status.classList.add('is-visible'); } };
 
       if (btn) { btn.textContent = 'Sending...'; btn.disabled = true; }
 
-      setTimeout(() => {
-        if (status) {
-          status.textContent = form.dataset.form === 'newsletter'
-            ? "You're subscribed. Watch your inbox for Ishmar updates."
-            : 'Thank you. Our team will get back to you within one business day.';
-          status.classList.add('is-visible');
+      try {
+        if (form.dataset.form === 'newsletter') {
+          await submitNewsletter(form);
+          setStatus("You're subscribed. Watch your inbox for Ishmar updates.");
+        } else if (form.dataset.form === 'contact') {
+          await submitContact(form);
+          setStatus('Thank you. Our team will get back to you within one business day.');
         }
         form.reset();
+      } catch (err) {
+        console.error('[Ishmar] Form submission failed:', err);
+        setStatus(
+          err && err.code === '23505'
+            ? "That email is already subscribed. You're all set."
+            : "Something went wrong. Please try again or email us directly."
+        );
+      } finally {
         if (btn) { btn.textContent = originalText; btn.disabled = false; }
-      }, 700);
+      }
     });
   });
+}
+
+async function submitNewsletter(form) {
+  const email = form.querySelector('input[type="email"]')?.value.trim();
+  if (!window.ishmarSupabase) {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return;
+  }
+  const { error } = await window.ishmarSupabase
+    .from('subscribers')
+    .insert({ email, source_page: window.location.pathname });
+  if (error) throw error;
+}
+
+async function submitContact(form) {
+  const data = {
+    name: form.querySelector('#cf-name')?.value.trim(),
+    email: form.querySelector('#cf-email')?.value.trim(),
+    phone: form.querySelector('#cf-phone')?.value.trim() || null,
+    topic: form.querySelector('#cf-topic')?.value || null,
+    message: form.querySelector('#cf-message')?.value.trim(),
+  };
+  if (!window.ishmarSupabase) {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return;
+  }
+  const { error } = await window.ishmarSupabase.from('contact_messages').insert(data);
+  if (error) throw error;
 }
 
 /* Load-more placeholder (until content is paginated from Supabase) -------------- */

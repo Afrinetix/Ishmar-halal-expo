@@ -4,11 +4,15 @@ Premium, enterprise-grade website for Ishmar Halal Expo Limited, Africa's halal
 trade exhibition organizer. Built with vanilla HTML5, CSS3 and ES6+ JavaScript.
 No frameworks, no build step, no page builder.
 
-## Status: Phase 1 complete (public frontend)
+## Status: Phase 1 (public frontend) + Phase 2 (database) complete
 
-This repository currently contains the full public-facing site as static,
-production-ready HTML. Supabase (database, auth, storage) and the admin CMS
-are the next phase and are **not yet wired in** — see "What's next" below.
+The full public-facing site is static, production-ready HTML, deployed on
+Vercel at [www.ishmarexpo.com](https://www.ishmarexpo.com). The Supabase
+schema, RLS policies and storage buckets are written and ready to run (see
+`supabase/README.md`), and the contact + newsletter forms are wired to post
+to it once credentials are added to `assets/js/supabase-client.js`. The
+admin CMS and dynamic content wiring for the rest of the site are still
+ahead — see "What's next" below.
 
 ## Structure
 
@@ -29,11 +33,15 @@ are the next phase and are **not yet wired in** — see "What's next" below.
 ├── sponsors.html
 ├── contact.html
 ├── admin/                   Reserved for the future CMS (Phase 3)
-├── supabase/                Reserved for schema, RLS policies, migrations (Phase 2)
+├── supabase/
+│   ├── README.md              Setup steps, role model, how to promote your first admin
+│   └── migrations/            0001_schema · 0002_policies · 0003_storage · 0004_seed
 ├── assets/
 │   ├── css/style.css         Full design system (tokens, typography, components)
+│   ├── js/supabase-client.js Supabase connection (CDN-based, no build step — fill in
+│   │                          your Project URL + anon key here)
 │   ├── js/main.js            Nav, mega menus, reveal animations, counters, filters,
-│   │                          lightbox, form handling (client-side stub), FAQ accordion
+│   │                          lightbox, form handling (Supabase-backed), FAQ accordion
 │   ├── images/, icons/, fonts/  (placeholders — see "Images" below)
 ├── templates/                Authoring fragments used to assemble pages (see below)
 ├── sitemap.xml
@@ -102,30 +110,21 @@ python -m http.server 8090
 # then open http://localhost:8090
 ```
 
-## What's next (not yet built)
+## What's next
 
-This phase intentionally stopped at a fully static, launch-ready frontend so
-the design and copy could be reviewed before backend work begins. Still to do:
-
-1. **Supabase schema** — tables for `events`, `registrations`, `gallery`,
-   `videos`, `blog_posts`, `sponsors`, `partners`, `testimonials`, `media`,
-   `contact_messages`, `pages`, `settings`, `seo_metadata`, plus RLS policies
-   for the Super Admin / Admin / Editor / Event Manager / Media Manager / Viewer
-   roles, and storage buckets (`gallery`, `events`, `videos`, `documents`,
-   `logos`, `team`, `blog`, `media`).
-2. **Admin CMS** (`admin/`) — authenticated dashboard so every section above
-   (events, gallery, sponsors, blog, contact messages, SEO settings, etc.) is
-   editable without touching code.
+1. **Run the Supabase migrations and add your credentials** — see
+   `supabase/README.md`. Until `assets/js/supabase-client.js` has a real
+   Project URL and anon key, the contact and newsletter forms still work
+   but only show a client-only confirmation; they don't persist anywhere.
+2. **Admin CMS** (`admin/`) — authenticated dashboard so every table in
+   Supabase (events, gallery, sponsors, blog, contact messages, SEO
+   settings, etc.) is editable without touching code. The role model
+   (Super Admin / Admin / Editor / Event Manager / Media Manager / Viewer)
+   is already enforced at the database level via RLS — the CMS UI still
+   needs building.
 3. **Dynamic wiring** — swap the static event/gallery/blog/sponsor markup on
    the public pages for data fetched from Supabase, with images served from
    Storage so new uploads appear without a redeploy.
-4. **Forms** — `contact.html` and the newsletter forms currently show a
-   client-side success message only (`assets/js/main.js`, `initFormHandlers`)
-   and do not persist anywhere yet; wire them to `contact_messages` /
-   a subscribers table.
-5. **Deployment** — add `vercel.json`, connect the Supabase project, and set
-   environment variables for the Supabase URL/anon key once the client SDK
-   is introduced.
 
 ## Content note
 
