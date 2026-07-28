@@ -252,7 +252,18 @@ class CrudPage {
 
   async handleSubmit(e) {
     e.preventDefault();
-    const submitBtn = this.modalForm.querySelector('button[type="submit"]');
+    // The Save button lives in .admin-modal-foot, a *sibling* of the <form>
+    // in every admin page's markup -- it's wired to the form only via its
+    // form="admin-modal-form" attribute, which is valid HTML (the browser
+    // still submits the form correctly) but is NOT something querySelector
+    // scoped to the form element will ever find, since querySelector only
+    // searches DOM descendants. That made this.modalForm.querySelector(...)
+    // return null here, and the very next line crashed with an uncaught
+    // TypeError before the try/catch below even started -- so every save,
+    // on every admin page, failed completely silently: no error shown, no
+    // success toast, nothing written to the database. Querying by the
+    // form="..." attribute instead finds it regardless of DOM position.
+    const submitBtn = document.querySelector(`button[type="submit"][form="${this.modalForm.id}"]`);
     const originalText = submitBtn.textContent;
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="spinner"></span> Saving...';
