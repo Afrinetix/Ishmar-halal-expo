@@ -21,6 +21,11 @@ files **in order** (each depends on the one before it):
    `super_admin`, since RLS row policies don't restrict individual columns.
    This adds a trigger that silently blocks anyone but an existing
    Super Admin from changing the `role` column.
+7. `migrations/0007_content_refresh.sql` — updates the event rows and
+   settings seeded by 0004 so they match the current company profile: the
+   48-expo milestone, the Nairobi + Mombasa event split, and the full legal
+   name (Ishmar Halal Traders Expo Limited) in `site_identity`. Safe to
+   re-run; uses `on conflict ... do update`.
 
 Paste each file's contents into a new query and click **Run**. If a step
 fails partway, fix the error and re-run just that file — every statement
@@ -72,9 +77,9 @@ Go to `/admin/` (or `/admin/index.html`) on your deployed site and sign in
 with the account from step 3. The dashboard and all 13 content sections
 (Events, Gallery, Videos, Blog, Sponsors, Partners, Testimonials, Media,
 Messages, Subscribers, Users, SEO Settings, Website Settings) are behind
-that login. See `admin/` in the main project README for what each page can
-do and what's still stubbed (e.g. the public pages don't yet read dynamic
-content back out of these tables — see "What's next" there).
+that login. Edits made there now appear on the live public site — see
+"Dynamic wiring" in the main project README for how that works and what's
+still static.
 
 ## Roles at a glance
 

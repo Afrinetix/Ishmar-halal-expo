@@ -73,11 +73,15 @@
       <form id="contact-form" class="admin-panel mb-4" style="padding:var(--space-4);">
         <h3 class="mb-3">Contact Info</h3>
         <div class="form-row">
-          <div class="form-field"><label for="c-phone">Phone</label><input type="text" id="c-phone"></div>
+          <div class="form-field"><label for="c-phone">Nairobi Phone</label><input type="text" id="c-phone"></div>
           <div class="form-field"><label for="c-whatsapp">WhatsApp (digits only, no +)</label><input type="text" id="c-whatsapp"></div>
         </div>
         <div class="form-field"><label for="c-email">Email</label><input type="email" id="c-email"></div>
-        <div class="form-field"><label for="c-address">Office Address</label><input type="text" id="c-address"></div>
+        <div class="form-field"><label for="c-address">Nairobi Office Address</label><input type="text" id="c-address"></div>
+        <div class="form-row">
+          <div class="form-field"><label for="c-mombasa-phone">Mombasa Phone</label><input type="text" id="c-mombasa-phone"></div>
+          <div class="form-field"><label for="c-mombasa-address">Mombasa Office Address</label><input type="text" id="c-mombasa-address"></div>
+        </div>
         <button type="submit" class="btn btn-primary btn-sm">Save Contact Info</button>
       </form>
 
@@ -126,6 +130,8 @@
     document.getElementById('c-whatsapp').value = contact.whatsapp || '';
     document.getElementById('c-email').value = contact.email || '';
     document.getElementById('c-address').value = contact.address || '';
+    document.getElementById('c-mombasa-phone').value = contact.mombasa_phone || '';
+    document.getElementById('c-mombasa-address').value = contact.mombasa_address || '';
 
     const social = await loadSetting('social_links');
     document.getElementById('soc-linkedin').value = social.linkedin || '';
@@ -150,6 +156,8 @@
         whatsapp: document.getElementById('c-whatsapp').value,
         email: document.getElementById('c-email').value,
         address: document.getElementById('c-address').value,
+        mombasa_phone: document.getElementById('c-mombasa-phone').value,
+        mombasa_address: document.getElementById('c-mombasa-address').value,
       });
       if (ok) showAdminToast('Contact info saved.');
     });

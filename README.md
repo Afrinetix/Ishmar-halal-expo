@@ -1,25 +1,24 @@
-# Ishmar Halal Expo — Website
+# Ishmar Halal Traders Expo — Website
 
-Premium, enterprise-grade website for Ishmar Halal Expo Limited, Africa's halal
-trade exhibition organizer. Built with vanilla HTML5, CSS3 and ES6+ JavaScript.
-No frameworks, no build step, no page builder.
+Premium, enterprise-grade website for Ishmar Halal Traders Expo Limited,
+Kenya's trusted exhibition and business networking company, organizer of
+48 successful expos across Nairobi and Mombasa. Built with vanilla HTML5,
+CSS3 and ES6+ JavaScript. No frameworks, no build step, no page builder.
 
-## Status: Phase 1 (public frontend) + Phase 2 (database) + Phase 3 (admin CMS) complete
+## Status: Phase 1 (frontend) + Phase 2 (database) + Phase 3 (admin CMS) + Phase 4 (dynamic wiring) complete
 
-The full public-facing site is static, production-ready HTML, deployed on
-Vercel at [www.ishmarexpo.com](https://www.ishmarexpo.com) and connected to
-a live Supabase project. The contact and newsletter forms persist to the
-database. A full admin panel at `/admin/` lets Super Admin / Admin / Editor /
-Event Manager / Media Manager / Viewer roles log in and manage every content
-table (events, gallery, videos, blog, sponsors, partners, testimonials,
-media, contact messages, subscribers, users, SEO settings, site settings) —
-see `admin/` below and `supabase/README.md` for how to log in.
-
-**Still ahead:** the public pages (index.html, events.html, gallery.html,
-etc.) still show static, hand-written content — editing something in the
-admin panel does not yet change what visitors see on the live site. Wiring
-the public pages to read from Supabase instead of static HTML is the next
-phase — see "What's next" below.
+The site is deployed on Vercel at [www.ishmarexpo.com](https://www.ishmarexpo.com)
+and connected to a live Supabase project. The admin panel at `/admin/` lets
+Super Admin / Admin / Editor / Event Manager / Media Manager / Viewer roles
+manage every content table, and — as of Phase 4 — **those edits now show up
+on the live site**: `assets/js/public-data.js` fetches Events, Gallery,
+Blog Posts, Testimonials, Partners/Sponsors logos, Press and Videos from
+Supabase on page load and swaps them into the same markup the static
+fallback content uses, so nothing ever renders empty and no design/layout
+changed. Contact info and social links set in `/admin/settings.html`
+propagate into the footer and WhatsApp button on every page. See "Dynamic
+wiring" below for exactly how, and `supabase/README.md` for how to log in
+and which migrations to run.
 
 ## Structure
 
@@ -53,12 +52,16 @@ phase — see "What's next" below.
 ├── supabase/
 │   ├── README.md              Setup steps, role model, how to log in to the admin panel
 │   └── migrations/            0001_schema · 0002_policies · 0003_storage · 0004_seed ·
-│                                0005_profiles_email · 0006_secure_role_updates
+│                                0005_profiles_email · 0006_secure_role_updates ·
+│                                0007_content_refresh (48-expo milestone, Nairobi + Mombasa)
 ├── assets/
 │   ├── css/style.css         Full design system (tokens, typography, components)
 │   ├── css/admin.css         Admin-only styles (sidebar, tables, modals) — extends style.css
 │   ├── js/supabase-client.js Supabase connection (CDN-based, no build step — fill in
 │   │                          your Project URL + anon key here)
+│   ├── js/public-data.js     Fetches Events/Gallery/Blog/Testimonials/Partners/Media from
+│   │                          Supabase and renders them into existing page markup (see
+│   │                          "Dynamic wiring" below)
 │   ├── js/main.js            Nav, mega menus, reveal animations, counters, filters,
 │   │                          lightbox, form handling (Supabase-backed), FAQ accordion
 │   ├── js/admin/auth.js      Session guard + role-based nav visibility + logout,
@@ -139,6 +142,39 @@ link), but the real enforcement is the RLS policies in
 `supabase/migrations/0002_policies.sql` — a disabled button is a UX nicety,
 not the security boundary.
 
+## Dynamic wiring
+
+Every dynamic container has a stable `id` (e.g. `#dyn-featured-events`,
+`#dyn-events-upcoming`, `#dyn-gallery-grid`, `#dyn-blog-grid`,
+`#dyn-testimonials`, `#dyn-partners-logos`, `#dyn-partners-institutional`,
+`#dyn-partners-finance`, `#dyn-press-list`, `#dyn-video-grid`,
+`#dyn-latest-news`) already sitting on top of the same static example
+content used during Phase 1. On `DOMContentLoaded`, `public-data.js`:
+
+1. Checks each id exists on the current page (most pages only have a few).
+2. Queries the matching Supabase table.
+3. **Only replaces `innerHTML` if the query returned rows** — an empty
+   table leaves the static fallback exactly as it was, so a page never
+   renders empty just because nothing's been added in the admin yet.
+4. Renders using the exact CSS classes the static markup already used
+   (`.card`, `.masonry__item`, `.testimonial-card`, etc.), so no layout or
+   animation changed — `[data-reveal-group]` fade-ins still work because
+   only the *children* of an already-observed container are replaced, never
+   the container itself.
+
+`event-detail.html` reads `?slug=` from the URL and overwrites the
+in-page text (title, dates, venue, visitor/exhibitor counts) if a matching
+event is found; without a slug or a match it just shows its static
+flagship-event content. `insights/post.html` is a new generic template for
+blog posts created in the admin that don't have a hand-written file like
+`insights/five-export-mistakes.html` — it renders entirely from `?slug=`.
+
+Two small fixes in `main.js` were required for this to work: the filter-bar
+click handler now re-queries the DOM instead of caching a stale item list,
+and the lightbox uses event delegation instead of per-element listeners —
+both so content injected *after* page load still works with the existing
+filter/lightbox features.
+
 ## Images
 
 All photography currently points to Unsplash stock URLs (clearly usable for
@@ -162,22 +198,30 @@ python -m http.server 8090
 
 ## What's next
 
-1. **Dynamic wiring** — the one big remaining piece. The public pages
-   (index.html, events.html, gallery.html, insights.html, etc.) still show
-   static, hand-written HTML. Editing an event in `/admin/events.html`
-   updates the database but not what a visitor sees. Each public page needs
-   its static cards/lists replaced with a Supabase `select()` on page load.
-2. **`pages` table isn't used yet** — it exists for CMS-editable blocks
-   (e.g. the About page story/mission text) but no admin UI or public-page
-   wiring reads from it yet.
-3. **`settings` values aren't read by the public site yet** — editing
-   contact info or social links in `/admin/settings.html` updates the
-   database, but the footer/contact page still show the hand-written values
-   baked into the HTML.
+1. **Run `supabase/migrations/0007_content_refresh.sql`** (and 0005/0006 if
+   you haven't already) — it updates the event rows and settings seeded
+   earlier so the live database matches the current company profile: the
+   48-expo milestone, the Nairobi + Mombasa event split, and the full legal
+   name in `site_identity`.
+2. **`pages` table isn't used yet** — it exists for CMS-editable long-form
+   blocks (e.g. the About page story/mission text) but no admin UI or
+   public-page wiring reads from it yet; those sections are still static
+   HTML, edited by changing the file directly.
+3. **Interviews and Downloads on `media.html` are still static** — Press
+   and Videos are wired to Supabase; the Interviews and Downloads sections
+   were left as-is to keep this pass focused.
+4. **Nairobi vs. Mombasa office fields on `contact.html` are still
+   static** — `public-data.js` updates the single site-wide footer address
+   from Website Settings, but the two office cards on the Contact page
+   itself aren't yet bound to the `mombasa_phone`/`mombasa_address` fields
+   added to `contact_info` in Phase 4.
 
 ## Content note
 
-Company name, team names, statistics, testimonials, press mentions and
-historical dates throughout this site (e.g. "founded 2017", exhibitor counts,
-leadership names) are placeholder content written to demonstrate tone and
-structure. Replace with Ishmar's real figures, history and team before launch.
+Team names, some statistics and historical milestone dates are placeholder
+content written to demonstrate tone and structure (e.g. specific founding
+year, individual leadership names, exact visitor/exhibitor counts). The
+company profile itself — name, vision, mission, values, the 48-expo
+milestone, and Nairobi/Mombasa as operating locations — reflects the brief
+provided for Ishmar Halal Traders Expo Limited. Replace any remaining
+placeholder specifics with the company's real figures before launch.

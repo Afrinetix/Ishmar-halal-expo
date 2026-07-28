@@ -191,11 +191,13 @@ function initSmoothAnchors() {
   });
 }
 
-/* Generic filter bars (events, gallery, blog, media) ---------------------------- */
+/* Generic filter bars (events, gallery, blog, media) ----------------------------
+   Items are re-queried on every click (not cached at init) so filtering still
+   works correctly after assets/js/public-data.js swaps in Supabase-driven
+   cards/gallery items that didn't exist in the DOM yet at page load. */
 function initFilterBars() {
   document.querySelectorAll('[data-filter-bar]').forEach((bar) => {
     const targetSelector = bar.dataset.filterBar;
-    const items = document.querySelectorAll(targetSelector);
     const chips = bar.querySelectorAll('.filter-chip');
 
     chips.forEach((chip) => {
@@ -204,7 +206,7 @@ function initFilterBars() {
         chip.classList.add('is-active');
         const filter = chip.dataset.filter;
 
-        items.forEach((item) => {
+        document.querySelectorAll(targetSelector).forEach((item) => {
           const cats = (item.dataset.category || '').split(' ');
           const show = filter === 'all' || cats.includes(filter);
           item.style.display = show ? '' : 'none';
@@ -214,10 +216,11 @@ function initFilterBars() {
   });
 }
 
-/* Lightweight lightbox for gallery ----------------------------------------------- */
+/* Lightweight lightbox for gallery -----------------------------------------------
+   Uses event delegation on document (not per-element listeners) so gallery
+   items injected later by assets/js/public-data.js work without re-init. */
 function initLightbox() {
-  const triggers = document.querySelectorAll('[data-lightbox]');
-  if (!triggers.length) return;
+  if (!document.querySelector('[data-lightbox]')) return;
 
   const overlay = document.createElement('div');
   overlay.className = 'lightbox-overlay';
@@ -230,14 +233,14 @@ function initLightbox() {
   document.body.appendChild(overlay);
 
   const img = overlay.querySelector('.lightbox-img');
-  const items = Array.from(triggers);
   let current = 0;
 
   const open = (index) => {
-    current = index;
-    const src = items[current].dataset.lightbox;
-    img.src = src;
-    img.alt = items[current].querySelector('img')?.alt || '';
+    const items = document.querySelectorAll('[data-lightbox]');
+    current = (index + items.length) % items.length;
+    const el = items[current];
+    img.src = el.dataset.lightbox;
+    img.alt = el.querySelector('img')?.alt || '';
     overlay.classList.add('is-open');
     document.body.style.overflow = 'hidden';
   };
@@ -245,12 +248,15 @@ function initLightbox() {
     overlay.classList.remove('is-open');
     document.body.style.overflow = '';
   };
-  const nav = (dir) => {
-    current = (current + dir + items.length) % items.length;
-    open(current);
-  };
+  const nav = (dir) => open(current + dir);
 
-  items.forEach((item, i) => item.addEventListener('click', (e) => { e.preventDefault(); open(i); }));
+  document.addEventListener('click', (e) => {
+    const trigger = e.target.closest('[data-lightbox]');
+    if (!trigger) return;
+    e.preventDefault();
+    const items = Array.from(document.querySelectorAll('[data-lightbox]'));
+    open(items.indexOf(trigger));
+  });
   overlay.querySelector('.lightbox-close').addEventListener('click', close);
   overlay.querySelector('.lightbox-prev').addEventListener('click', () => nav(-1));
   overlay.querySelector('.lightbox-next').addEventListener('click', () => nav(1));
