@@ -3,7 +3,7 @@
 ## 1. Run the migrations
 
 Open your Supabase project -> **SQL Editor** -> **New query**, and run these
-four files **in order** (each depends on the one before it):
+files **in order** (each depends on the one before it):
 
 1. `migrations/0001_schema.sql` — enums, tables, indexes, triggers
 2. `migrations/0002_policies.sql` — Row Level Security for every table
@@ -12,6 +12,15 @@ four files **in order** (each depends on the one before it):
 4. `migrations/0004_seed.sql` — optional but recommended: seeds real rows
    matching the placeholder content already on the site, so both the public
    pages and the future admin CMS have something to show immediately
+5. `migrations/0005_profiles_email.sql` — adds an `email` column to
+   `profiles` (used by the admin Users page) and backfills it from
+   `auth.users`. **Required if you ran 0001-0004 before this file existed.**
+6. `migrations/0006_secure_role_updates.sql` — **security fix, run this even
+   if you think you don't need it.** Without it, the "update own profile"
+   policy from step 2 lets any signed-in user set their *own* role to
+   `super_admin`, since RLS row policies don't restrict individual columns.
+   This adds a trigger that silently blocks anyone but an existing
+   Super Admin from changing the `role` column.
 
 Paste each file's contents into a new query and click **Run**. If a step
 fails partway, fix the error and re-run just that file — every statement
@@ -54,9 +63,18 @@ directly in Supabase:
    update public.profiles set role = 'super_admin' where id =
      (select id from auth.users where email = 'you@ishmarexpo.com');
    ```
-3. From then on, that Super Admin can manage other users' roles once the
-   admin CMS (`admin/`) is built — see the main project README for what's
-   still ahead.
+3. From then on, that Super Admin can manage other users' roles from
+   **Users** in the admin panel itself (`/admin/users.html`).
+
+## 4. Log in to the admin panel
+
+Go to `/admin/` (or `/admin/index.html`) on your deployed site and sign in
+with the account from step 3. The dashboard and all 13 content sections
+(Events, Gallery, Videos, Blog, Sponsors, Partners, Testimonials, Media,
+Messages, Subscribers, Users, SEO Settings, Website Settings) are behind
+that login. See `admin/` in the main project README for what each page can
+do and what's still stubbed (e.g. the public pages don't yet read dynamic
+content back out of these tables — see "What's next" there).
 
 ## Roles at a glance
 

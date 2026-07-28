@@ -45,6 +45,7 @@ create type public.message_status as enum ('new', 'read', 'archived');
 -- ----------------------------------------------------------------------------
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
+  email text,
   full_name text,
   avatar_url text,
   role public.user_role not null default 'viewer',
@@ -60,8 +61,8 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
-  insert into public.profiles (id, full_name, role)
-  values (new.id, new.raw_user_meta_data->>'full_name', 'viewer');
+  insert into public.profiles (id, email, full_name, role)
+  values (new.id, new.email, new.raw_user_meta_data->>'full_name', 'viewer');
   return new;
 end;
 $$;

@@ -4,15 +4,22 @@ Premium, enterprise-grade website for Ishmar Halal Expo Limited, Africa's halal
 trade exhibition organizer. Built with vanilla HTML5, CSS3 and ES6+ JavaScript.
 No frameworks, no build step, no page builder.
 
-## Status: Phase 1 (public frontend) + Phase 2 (database) complete
+## Status: Phase 1 (public frontend) + Phase 2 (database) + Phase 3 (admin CMS) complete
 
 The full public-facing site is static, production-ready HTML, deployed on
-Vercel at [www.ishmarexpo.com](https://www.ishmarexpo.com). The Supabase
-schema, RLS policies and storage buckets are written and ready to run (see
-`supabase/README.md`), and the contact + newsletter forms are wired to post
-to it once credentials are added to `assets/js/supabase-client.js`. The
-admin CMS and dynamic content wiring for the rest of the site are still
-ahead — see "What's next" below.
+Vercel at [www.ishmarexpo.com](https://www.ishmarexpo.com) and connected to
+a live Supabase project. The contact and newsletter forms persist to the
+database. A full admin panel at `/admin/` lets Super Admin / Admin / Editor /
+Event Manager / Media Manager / Viewer roles log in and manage every content
+table (events, gallery, videos, blog, sponsors, partners, testimonials,
+media, contact messages, subscribers, users, SEO settings, site settings) —
+see `admin/` below and `supabase/README.md` for how to log in.
+
+**Still ahead:** the public pages (index.html, events.html, gallery.html,
+etc.) still show static, hand-written content — editing something in the
+admin panel does not yet change what visitors see on the live site. Wiring
+the public pages to read from Supabase instead of static HTML is the next
+phase — see "What's next" below.
 
 ## Structure
 
@@ -32,16 +39,32 @@ ahead — see "What's next" below.
 ├── partners.html
 ├── sponsors.html
 ├── contact.html
-├── admin/                   Reserved for the future CMS (Phase 3)
+├── admin/                   Admin CMS (see "Admin CMS" below)
+│   ├── index.html              Login
+│   ├── dashboard.html          Stat overview + recent activity
+│   ├── events.html, gallery.html, videos.html, blog.html,
+│   │   sponsors.html, partners.html, testimonials.html, media.html
+│   │                          Generic CRUD pages (list + create/edit/delete)
+│   ├── messages.html            Contact form submissions (view + status only)
+│   ├── subscribers.html          Newsletter signups (view + CSV export)
+│   ├── users.html                 Role management (Super Admin only)
+│   ├── seo.html                    Per-page SEO overrides
+│   └── settings.html                Site identity, contact info, social links
 ├── supabase/
-│   ├── README.md              Setup steps, role model, how to promote your first admin
-│   └── migrations/            0001_schema · 0002_policies · 0003_storage · 0004_seed
+│   ├── README.md              Setup steps, role model, how to log in to the admin panel
+│   └── migrations/            0001_schema · 0002_policies · 0003_storage · 0004_seed ·
+│                                0005_profiles_email · 0006_secure_role_updates
 ├── assets/
 │   ├── css/style.css         Full design system (tokens, typography, components)
+│   ├── css/admin.css         Admin-only styles (sidebar, tables, modals) — extends style.css
 │   ├── js/supabase-client.js Supabase connection (CDN-based, no build step — fill in
 │   │                          your Project URL + anon key here)
 │   ├── js/main.js            Nav, mega menus, reveal animations, counters, filters,
 │   │                          lightbox, form handling (Supabase-backed), FAQ accordion
+│   ├── js/admin/auth.js      Session guard + role-based nav visibility + logout,
+│   │                          used by every admin page except the login page
+│   ├── js/admin/crud.js      Generic config-driven CRUD engine — each admin content
+│   │                          page defines list columns + form fields, this renders it
 │   ├── images/, icons/, fonts/  (placeholders — see "Images" below)
 ├── templates/                Authoring fragments used to assemble pages (see below)
 ├── sitemap.xml
@@ -89,6 +112,33 @@ The two pages under `insights/` are one directory deeper, so their header/footer
 paths are hand-written with `../` prefixes rather than assembled — there are
 only two of them today. If the blog grows, it's worth generating those too.
 
+## Admin CMS
+
+Every admin page except the login screen follows the same shell (sidebar +
+topbar) and loads three scripts in order: the Supabase CDN client,
+`supabase-client.js`, then `assets/js/admin/auth.js` — which checks for a
+session, redirects to `admin/index.html` if there isn't one, loads the
+caller's role from `profiles`, and fires an `ishmar-admin-ready` event once
+that's done. Content pages listen for that event and hand a small config
+object to `initCrudPage()` in `assets/js/admin/crud.js`, which renders the
+list, search, create/edit modal (including image upload to Storage) and
+delete — see `admin/events.html` for the fullest example of a config.
+
+Three pages don't fit that generic pattern and are hand-built instead:
+- `users.html` — gated to `role === 'super_admin'` client-side (RLS enforces
+  it server-side regardless); reuses the CRUD engine's class directly rather
+  than the full table since only the `role` field is editable.
+- `settings.html` — the `settings` table is a small, fixed key/value store
+  (`site_identity`, `contact_info`, `social_links`), so this is a bespoke
+  form per key rather than a generic list.
+- `messages.html` uses the CRUD engine but marks every field `readonly:
+  true` except `status`, since messages are viewed/triaged, not authored.
+
+The UI hides what a role can't do (e.g. only Super Admin sees the Users nav
+link), but the real enforcement is the RLS policies in
+`supabase/migrations/0002_policies.sql` — a disabled button is a UX nicety,
+not the security boundary.
+
 ## Images
 
 All photography currently points to Unsplash stock URLs (clearly usable for
@@ -112,19 +162,18 @@ python -m http.server 8090
 
 ## What's next
 
-1. **Run the Supabase migrations and add your credentials** — see
-   `supabase/README.md`. Until `assets/js/supabase-client.js` has a real
-   Project URL and anon key, the contact and newsletter forms still work
-   but only show a client-only confirmation; they don't persist anywhere.
-2. **Admin CMS** (`admin/`) — authenticated dashboard so every table in
-   Supabase (events, gallery, sponsors, blog, contact messages, SEO
-   settings, etc.) is editable without touching code. The role model
-   (Super Admin / Admin / Editor / Event Manager / Media Manager / Viewer)
-   is already enforced at the database level via RLS — the CMS UI still
-   needs building.
-3. **Dynamic wiring** — swap the static event/gallery/blog/sponsor markup on
-   the public pages for data fetched from Supabase, with images served from
-   Storage so new uploads appear without a redeploy.
+1. **Dynamic wiring** — the one big remaining piece. The public pages
+   (index.html, events.html, gallery.html, insights.html, etc.) still show
+   static, hand-written HTML. Editing an event in `/admin/events.html`
+   updates the database but not what a visitor sees. Each public page needs
+   its static cards/lists replaced with a Supabase `select()` on page load.
+2. **`pages` table isn't used yet** — it exists for CMS-editable blocks
+   (e.g. the About page story/mission text) but no admin UI or public-page
+   wiring reads from it yet.
+3. **`settings` values aren't read by the public site yet** — editing
+   contact info or social links in `/admin/settings.html` updates the
+   database, but the footer/contact page still show the hand-written values
+   baked into the HTML.
 
 ## Content note
 
