@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 
-Sitemap: https://ishmarhalalexpo.com/sitemap.xml
+Sitemap: https://www.ishmarexpo.com/sitemap.xml
