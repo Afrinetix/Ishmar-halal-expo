@@ -385,30 +385,23 @@ p { color: var(--text-muted); }
 
 .header-cta { display: flex; align-items: center; gap: var(--space-3); }
 
+/* Mobile-first base: this is what every mega-menu gets by default (phones
+   and tablets) — a simple static single-column panel that expands inline
+   under its nav item. Desktop's absolute-positioned floating dropdown is
+   layered on top of this via the min-width:1081px block further down,
+   rather than the mobile styles trying to "undo" desktop positioning
+   properties. One layout owns each viewport size; nothing to override or
+   fight with. */
 .mega-menu {
-  position: absolute;
-  top: calc(100% + 1rem);
-  left: 50%;
-  transform: translate(-50%, 10px);
-  min-width: 620px;
-  background: var(--white);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border);
-  padding: var(--space-3);
-  display: grid;
-  grid-template-columns: 1.1fr 1fr;
+  display: none;
+  grid-template-columns: 1fr;
   gap: var(--space-3);
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity var(--transition), transform var(--transition), visibility var(--transition);
-  z-index: 50;
+  background: var(--gray-50);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem;
+  margin-bottom: 0.75rem;
 }
-.nav-item.is-open .mega-menu {
-  opacity: 1; visibility: visible; pointer-events: auto;
-  transform: translate(-50%, 0);
-}
+.nav-item.is-open .mega-menu { display: grid; }
 .mega-menu__col { display: flex; flex-direction: column; gap: 0.15rem; }
 .mega-menu__title {
   font-size: 0.7rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
@@ -416,29 +409,63 @@ p { color: var(--text-muted); }
 }
 .mega-menu a.mega-link {
   display: flex; flex-direction: column; gap: 0.15rem;
-  padding: 0.6rem 0.75rem; border-radius: var(--radius-sm);
+  padding: 0.75rem 0.85rem; border-radius: var(--radius-sm);
   transition: background var(--transition);
 }
-.mega-menu a.mega-link:hover { background: var(--gray-50); }
+.mega-menu a.mega-link:hover { background: var(--white); }
 .mega-menu a.mega-link strong { font-size: 0.9rem; font-weight: 700; color: var(--black); }
 .mega-menu a.mega-link span { font-size: 0.8rem; color: var(--gray-600); }
-.mega-menu__feature {
-  background: var(--black);
-  border-radius: var(--radius-sm);
-  padding: var(--space-3);
-  display: flex; flex-direction: column; justify-content: space-between; gap: var(--space-3);
-  color: var(--white);
-  background-size: cover; background-position: center;
-  position: relative; overflow: hidden;
-  min-height: 180px;
+.mega-menu__feature { display: none; }
+
+/* Desktop: float as an absolutely-positioned dropdown with the two-column
+   layout and feature tile. Nothing below this point applies on phones or
+   tablets. */
+@media (min-width: 1081px) {
+  .mega-menu {
+    position: absolute;
+    top: calc(100% + 1rem);
+    left: 50%;
+    transform: translate(-50%, 10px);
+    min-width: 620px;
+    width: max-content;
+    background: var(--white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    padding: var(--space-3);
+    grid-template-columns: 1.1fr 1fr;
+    margin-bottom: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity var(--transition), transform var(--transition), visibility var(--transition);
+    z-index: 50;
+  }
+  .nav-item.is-open .mega-menu {
+    display: grid;
+    opacity: 1; visibility: visible; pointer-events: auto;
+    transform: translate(-50%, 0);
+  }
+  .mega-menu a.mega-link { padding: 0.6rem 0.75rem; }
+  .mega-menu a.mega-link:hover { background: var(--gray-50); }
+  .mega-menu__feature {
+    background: var(--black);
+    border-radius: var(--radius-sm);
+    padding: var(--space-3);
+    display: flex; flex-direction: column; justify-content: space-between; gap: var(--space-3);
+    color: var(--white);
+    background-size: cover; background-position: center;
+    position: relative; overflow: hidden;
+    min-height: 180px;
+  }
+  .mega-menu__feature::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(17,17,17,0.15), rgba(17,17,17,0.85));
+  }
+  .mega-menu__feature > * { position: relative; z-index: 1; }
+  .mega-menu__feature .eyebrow { color: var(--gold); }
+  .mega-menu__feature .eyebrow::before { background: var(--gold); }
 }
-.mega-menu__feature::before {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(17,17,17,0.15), rgba(17,17,17,0.85));
-}
-.mega-menu__feature > * { position: relative; z-index: 1; }
-.mega-menu__feature .eyebrow { color: var(--gold); }
-.mega-menu__feature .eyebrow::before { background: var(--gold); }
 
 .nav-toggle {
   display: none;
@@ -475,14 +502,6 @@ p { color: var(--text-muted); }
   .nav-main > ul { flex-direction: column; align-items: stretch; gap: 0; }
   .nav-main > ul > li { border-bottom: 1px solid var(--border); }
   .nav-link { padding: 1rem 0.2rem; justify-content: space-between; width: 100%; }
-  .mega-menu {
-    position: static; min-width: 0; transform: none; box-shadow: none; border: none;
-    grid-template-columns: 1fr; display: none; opacity: 1; visibility: visible; pointer-events: auto;
-    background: var(--gray-50); border-radius: var(--radius-sm); margin-bottom: 0.75rem; padding: 0.5rem;
-  }
-  .nav-item.is-open .mega-menu { display: grid; }
-  .mega-menu__feature { display: none; }
-  .mega-menu a.mega-link { padding: 0.75rem 0.85rem; }
   .header-cta .btn-primary { display: none; }
   .nav-toggle { display: flex; flex-shrink: 0; }
   .site-header .container { gap: var(--space-2); }
@@ -736,6 +755,14 @@ p { color: var(--text-muted); }
 .form-field textarea { resize: vertical; min-height: 140px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
 @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
+
+/* Two-column page layouts (contact form + office info, event detail + sidebar).
+   These were previously inline styles on the page, which — being inline —
+   couldn't be overridden by any responsive rule here at all, forcing a
+   cramped two-column layout on phones and tablets no matter the screen
+   width. Defined as real classes so they can actually respond. */
+.contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); align-items: flex-start; }
+@media (max-width: 860px) { .contact-grid { grid-template-columns: 1fr; } }
 .form-note { font-size: 0.8rem; color: var(--gray-600); }
 [data-form-status] { opacity: 0; transition: opacity 0.3s var(--ease); min-height: 1.2em; }
 [data-form-status].is-visible { opacity: 1; color: var(--gold-dark); font-weight: 600; }
@@ -1041,7 +1068,11 @@ p { color: var(--text-muted); }
 .author-box img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; }
 
 /* Sidebar (event detail) */
+.event-detail-grid { display: grid; grid-template-columns: 1fr 340px; gap: var(--space-6); align-items: flex-start; }
+@media (max-width: 900px) { .event-detail-grid { grid-template-columns: 1fr; } }
+
 .event-sidebar { position: sticky; top: calc(var(--header-h-live, var(--header-h)) + var(--space-3)); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-4); }
+@media (max-width: 900px) { .event-sidebar { position: static; } }
 .event-sidebar dl { display: flex; flex-direction: column; gap: var(--space-2); margin: var(--space-3) 0; }
 .event-sidebar dt { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gray-600); font-weight: 700; }
 .event-sidebar dd { font-size: 0.95rem; font-weight: 600; margin-top: 0.15rem; }
