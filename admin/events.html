@@ -95,13 +95,14 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="../assets/js/supabase-client.js"></script>
 <script src="../assets/js/admin/auth.js?v=3"></script>
-<script src="../assets/js/admin/crud.js?v=3"></script>
+<script src="../assets/js/admin/crud.js?v=4"></script>
 <script>
   initCrudPage({
     table: 'events',
     title: 'Event',
+    autoSlugFrom: 'title',
     orderBy: { column: 'start_date', ascending: false },
-    searchColumns: ['title', 'slug', 'venue_name'],
+    searchColumns: ['title', 'venue_name'],
     columns: [
       { key: 'cover_image_url', label: '', type: 'image' },
       { key: 'title', label: 'Title' },
@@ -111,24 +112,16 @@
       { key: 'venue_name', label: 'Venue' },
     ],
     fields: [
-      { key: 'title', label: 'Title', type: 'text', required: true },
-      { key: 'slug', label: 'Slug', type: 'text', required: true, hint: 'Used in the URL, e.g. halal-trade-expo-2027' },
+      { key: 'title', label: 'Event Title', type: 'text', required: true },
       { key: 'category', label: 'Category', type: 'select', required: true, options: ['trade_fair', 'conference', 'networking', 'corporate'] },
       { key: 'status', label: 'Status', type: 'select', required: true, options: ['upcoming', 'past', 'cancelled', 'postponed'] },
-      { key: 'summary', label: 'Summary', type: 'textarea', hint: 'Short one-liner shown on cards' },
-      { key: 'description', label: 'Description', type: 'textarea', rows: 6 },
       { key: 'start_date', label: 'Start Date', type: 'date', required: true },
       { key: 'end_date', label: 'End Date', type: 'date' },
-      { key: 'venue_name', label: 'Venue Name', type: 'text' },
-      { key: 'venue_address', label: 'Venue Address', type: 'text' },
-      { key: 'city', label: 'City', type: 'text' },
-      { key: 'country', label: 'Country', type: 'text' },
+      { key: 'city', label: 'City', type: 'select', options: ['Nairobi', 'Mombasa'] },
+      { key: 'venue_name', label: 'Venue', type: 'text', hint: 'e.g. Kenyatta International Convention Centre' },
+      { key: 'summary', label: 'Description', type: 'textarea', hint: 'Shown on event cards and the event page' },
       { key: 'cover_image_url', label: 'Cover Image', type: 'image', bucket: 'events' },
-      { key: 'expected_visitors', label: 'Expected Visitors', type: 'number' },
-      { key: 'exhibitor_count', label: 'Exhibitor Count', type: 'number' },
       { key: 'is_featured', label: 'Feature on homepage', type: 'checkbox' },
-      { key: 'agenda', label: 'Agenda (advanced)', type: 'json', hint: 'Raw JSON array, e.g. [{"time":"09:00","title":"Doors open"}]. Leave blank if unsure.' },
-      { key: 'speakers', label: 'Speakers (advanced)', type: 'json', hint: 'Raw JSON array, e.g. [{"name":"Jane Doe","title":"CEO"}]. Leave blank if unsure.' },
     ],
   });
 </script>

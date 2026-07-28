@@ -11,7 +11,10 @@
    ========================================================================== */
 
 function initCrudPage(config) {
-  document.addEventListener('ishmar-admin-ready', () => new CrudPage(config).init());
+  document.addEventListener('ishmar-admin-ready', () => {
+    window.__ishmarCrudPage = new CrudPage(config);
+    window.__ishmarCrudPage.init();
+  });
 }
 
 class CrudPage {
@@ -313,7 +316,17 @@ class CrudPage {
       }
     }
 
-    if (this.config.extraPayload) Object.assign(payload, this.config.extraPayload());
+    if (this.config.extraPayload) Object.assign(payload, this.config.extraPayload(payload, this.editingId));
+
+    // config.autoSlugFrom: 'title' lets a form skip a visible slug field
+    // entirely. A slug is generated from that field on create only — never
+    // on edit, so publishing changes never silently changes an existing
+    // page's URL. A short random suffix keeps it collision-safe without
+    // needing the user to pick something unique themselves.
+    if (this.config.autoSlugFrom && !this.editingId) {
+      payload.slug = `${slugify(payload[this.config.autoSlugFrom] || '')}-${Math.random().toString(36).slice(2, 6)}`;
+    }
+
     return payload;
   }
 
@@ -330,6 +343,67 @@ class CrudPage {
 }
 
 /* -------------------------------------------------------------------- utils */
+
+/* Bulk photo upload -------------------------------------------------------------
+   Lets a page add a "select multiple files at once" button that uploads
+   each one to Storage and inserts a row per file, instead of forcing one
+   trip through the single-item create form per photo.
+   options: { buttonId, table, bucket, imageField, titleField, defaults } */
+function initBulkImageUpload(options) {
+  document.addEventListener('ishmar-admin-ready', () => {
+    const btn = document.getElementById(options.buttonId);
+    if (!btn) return;
+
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.multiple = true;
+    input.style.display = 'none';
+    document.body.appendChild(input);
+
+    btn.addEventListener('click', () => input.click());
+
+    input.addEventListener('change', async () => {
+      const files = Array.from(input.files);
+      input.value = '';
+      if (!files.length) return;
+
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      let succeeded = 0;
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        btn.textContent = `Uploading ${i + 1} of ${files.length}...`;
+        try {
+          const url = await uploadToStorage(options.bucket, file);
+          const row = {
+            [options.imageField]: url,
+            [options.titleField]: filenameToTitle(file.name),
+            ...(options.defaults || {}),
+          };
+          const { error } = await window.ishmarSupabase.from(options.table).insert(row);
+          if (error) throw error;
+          succeeded++;
+        } catch (err) {
+          console.error('[Ishmar Admin] Bulk upload failed for', file.name, err);
+          showAdminToast(`${file.name} failed: ${friendlyError(err)}`, true);
+        }
+      }
+
+      btn.disabled = false;
+      btn.textContent = originalText;
+      showAdminToast(`Uploaded ${succeeded} of ${files.length} photo${files.length === 1 ? '' : 's'}.`, succeeded < files.length);
+      if (window.__ishmarCrudPage) window.__ishmarCrudPage.loadRows();
+    });
+  });
+}
+
+function filenameToTitle(filename) {
+  const base = filename.replace(/\.[^./\\]+$/, '');
+  const spaced = base.replace(/[-_]+/g, ' ').trim();
+  return spaced.replace(/\b\w/g, (c) => c.toUpperCase()) || 'Untitled photo';
+}
 
 async function uploadToStorage(bucket, file) {
   const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_')}`;
@@ -349,6 +423,15 @@ function escapeHtml(value) {
   if (value === null || value === undefined) return '';
   return String(value)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function slugify(value) {
+  return String(value)
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60) || 'item';
 }
 
 function labelize(value) {

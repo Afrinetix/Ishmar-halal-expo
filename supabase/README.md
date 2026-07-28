@@ -26,6 +26,11 @@ files **in order** (each depends on the one before it):
    48-expo milestone, the Nairobi + Mombasa event split, and the full legal
    name (Ishmar Halal Traders Expo Limited) in `site_identity`. Safe to
    re-run; uses `on conflict ... do update`.
+8. `migrations/0008_default_role_admin.sql` — new sign-ups now default to
+   `admin` instead of `viewer`. `viewer` is read-only, which is why saves
+   (e.g. adding a gallery photo) were silently rejected for any account
+   that hadn't been manually promoted. This also upgrades any existing
+   `viewer` accounts to `admin`.
 
 Paste each file's contents into a new query and click **Run**. If a step
 fails partway, fix the error and re-run just that file — every statement
@@ -61,15 +66,18 @@ directly in Supabase:
 
 1. Dashboard -> **Authentication** -> **Users** -> **Add user** (set an email
    and password, or send a magic link). This automatically creates a row in
-   `public.profiles` with `role = 'viewer'` (see the `handle_new_user`
-   trigger in `0001_schema.sql`).
-2. Promote that user to Super Admin by running in the SQL Editor:
+   `public.profiles` with `role = 'admin'` (see the `handle_new_user`
+   trigger, updated in `0008_default_role_admin.sql`) — enough to manage
+   every content table right away, with no manual SQL step required.
+2. If you specifically need that account to manage *other users'* roles
+   too (the Users page in the admin panel), promote it to Super Admin:
    ```sql
    update public.profiles set role = 'super_admin' where id =
      (select id from auth.users where email = 'you@ishmarexpo.com');
    ```
-3. From then on, that Super Admin can manage other users' roles from
-   **Users** in the admin panel itself (`/admin/users.html`).
+   This is the one thing `admin` deliberately can't do — it's kept to a
+   smaller set of trusted accounts so any signed-in admin can't grant
+   themselves (or anyone else) elevated access.
 
 ## 4. Log in to the admin panel
 

@@ -65,8 +65,12 @@
       <div class="admin-panel">
         <div class="admin-toolbar">
           <div class="search-field"><input id="admin-search" placeholder="Search gallery..."></div>
-          <button class="btn btn-primary btn-sm" id="admin-new-btn">+ New Photo</button>
+          <div style="display:flex;gap:.5rem;">
+            <button class="btn btn-outline btn-sm" id="bulk-upload-btn">Upload Multiple Photos</button>
+            <button class="btn btn-primary btn-sm" id="admin-new-btn">+ New Photo</button>
+          </div>
         </div>
+        <p class="form-note" style="padding:0 var(--space-3);margin-top:-.5rem;">Select several files at once to add them all in one go — each becomes its own gallery entry, titled from its filename. Edit any entry afterwards to add a category or feature it.</p>
         <div class="admin-table-wrap">
           <table class="admin-table">
             <thead><tr><th></th><th>Title</th><th>Category</th><th>Year</th><th>Featured</th><th></th></tr></thead>
@@ -95,7 +99,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="../assets/js/supabase-client.js"></script>
 <script src="../assets/js/admin/auth.js?v=3"></script>
-<script src="../assets/js/admin/crud.js?v=3"></script>
+<script src="../assets/js/admin/crud.js?v=4"></script>
 <script>
   initCrudPage({
     table: 'gallery',
@@ -118,6 +122,14 @@
       { key: 'is_featured', label: 'Feature in highlights', type: 'checkbox' },
       { key: 'sort_order', label: 'Sort Order', type: 'number', hint: 'Lower numbers appear first' },
     ],
+  });
+
+  initBulkImageUpload({
+    buttonId: 'bulk-upload-btn',
+    table: 'gallery',
+    bucket: 'gallery',
+    imageField: 'image_url',
+    titleField: 'title',
   });
 </script>
 </body>

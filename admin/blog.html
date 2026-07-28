@@ -95,13 +95,14 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="../assets/js/supabase-client.js"></script>
 <script src="../assets/js/admin/auth.js?v=3"></script>
-<script src="../assets/js/admin/crud.js?v=3"></script>
+<script src="../assets/js/admin/crud.js?v=4"></script>
 <script>
   initCrudPage({
     table: 'blog_posts',
     title: 'Article',
+    autoSlugFrom: 'title',
     orderBy: { column: 'created_at', ascending: false },
-    searchColumns: ['title', 'slug', 'category', 'author_name'],
+    searchColumns: ['title', 'category', 'author_name'],
     columns: [
       { key: 'cover_image_url', label: '', type: 'image' },
       { key: 'title', label: 'Title' },
@@ -111,20 +112,20 @@
     ],
     fields: [
       { key: 'title', label: 'Title', type: 'text', required: true },
-      { key: 'slug', label: 'Slug', type: 'text', required: true, hint: 'Used in the URL, e.g. why-halal-certification-drives-growth' },
-      { key: 'excerpt', label: 'Excerpt', type: 'textarea', hint: 'Short summary shown on cards' },
-      { key: 'content', label: 'Content', type: 'textarea', rows: 10, required: true, hint: 'Plain text or HTML' },
+      { key: 'excerpt', label: 'Short Summary', type: 'textarea', hint: 'Shown on article cards' },
+      { key: 'content', label: 'Content', type: 'textarea', rows: 10, required: true },
       { key: 'cover_image_url', label: 'Cover Image', type: 'image', bucket: 'blog' },
       { key: 'category', label: 'Category', type: 'text', hint: 'e.g. Halal Trade, SME Growth, Entrepreneurship' },
-      { key: 'tags', label: 'Tags', type: 'tags' },
       { key: 'author_name', label: 'Author Name', type: 'text' },
-      { key: 'author_title', label: 'Author Title', type: 'text' },
-      { key: 'author_avatar_url', label: 'Author Photo', type: 'image', bucket: 'team' },
       { key: 'status', label: 'Status', type: 'select', required: true, options: ['draft', 'published', 'archived'] },
-      { key: 'published_at', label: 'Published Date', type: 'datetime' },
-      { key: 'seo_title', label: 'SEO Title', type: 'text' },
-      { key: 'seo_description', label: 'SEO Description', type: 'textarea' },
     ],
+    // Publishing an article for the first time stamps published_at with
+    // "now" automatically, so date sorting on the public Insights page
+    // always has something sensible to sort by without asking for it here.
+    extraPayload: (payload, editingId) => {
+      if (!editingId && payload.status === 'published') return { published_at: new Date().toISOString() };
+      return {};
+    },
   });
 </script>
 </body>
